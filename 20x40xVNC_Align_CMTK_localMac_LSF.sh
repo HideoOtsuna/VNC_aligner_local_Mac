@@ -95,8 +95,9 @@ if [[ $testmode == "1" ]]; then
     mkdir -p "$OUTPUT" "$DEBUG_DIR"
 
 ####### tools location setting #######################################################
-    MACRO_DIR="/Users/otsunah/test/VNC_aligner_local_ver/Necessary_files_VNC_Aligner/"
-    FIJI=/Users/otsunah/test/VNC_aligner_local_ver/Fiji_VNC_aligner.app/Contents/MacOS/ImageJ-macosx
+    REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    MACRO_DIR="${REPO_DIR}/Copy_to_other_Fiji/"
+    FIJI="${REPO_DIR}/Fiji_VNC_aligner.app/Contents/MacOS/ImageJ-macosx"
     CMTK="${MACRO_DIR}cmtk"
 
 
@@ -114,7 +115,7 @@ echo "TEMPNUMBER; "$TEMPNUMBER
     INPUT1_GENDER="u"
     objective="40x"
 
-    TempDir="/Users/otsunah/test/VNC_aligner_local_ver/VNC_Template"
+    TempDir="${REPO_DIR}/Template"
     MIPTempDir=${MACRO_DIR}"Template_MIP"
     NRRDCONV=${MACRO_DIR}"nrrd2v3draw_MCFO.ijm"
     PREPROCIMG="${MACRO_DIR%/}/VNC_preImageProcessing_Pipeline_05_22_2026.ijm"
