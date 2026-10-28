@@ -1,69 +1,171 @@
-# VNC aligner files
+# VNC Aligner for macOS
 
-Collected on October 19, 2026 from the installation used successfully for sample, Goro, I3, W4, and W5. Copied dependencies were verified against their sources using SHA-256. The main shell script was subsequently updated to select the 2026 macro and use this package's paths. The 2026 macro was subsequently corrected to restore the height-normalized depth search. Previous versions are saved as timestamped .bak files. COPY_MANIFEST.json and SHA256SUMS.txt record the updated script and macro checksums.
+VNC alignment pipeline by Hideo Otsuna. It preprocesses ventral nerve cord images in Fiji, registers them to a reference template with CMTK, resamples the image channels, calculates an alignment score, and generates color-depth projections.
 
-As of October 27, 2026, the packaged main script hard-codes `VNC_DV_FLIP=off` for every sample. Environment values cannot override it; use plain `bash SCRIPT FILE_PATH CPU_COUNT OUTPUT_FOLDER` commands. It no longer creates `FinalOutputs`; each sample's output folder contains its debug logs and any error properties. The documented sample no-flip run scored 0.8818 (2022: 0.8578); the earlier 0.8889 result had reversed DV orientation and is unsuitable for that sample. 
+This repository includes a Fiji application with the custom plugins, preprocessing and output macros, projection masks, and macOS CMTK executables. **Registration templates must be supplied separately, and the shell script's paths must be configured before running.**
 
-## Contents
+## Download
 
-- `20x40xVNC_Align_CMTK_localMac_LSF.sh`: current main script, configured for this Mac with the 2026 preprocessing macro, hard-coded DV flip off, and per-sample debug logs.
-- `align_run_tested.sh`: exact script used for the Diego batch, with the preprocessing macro path corrected to `OLD/` and separate per-sample debug logs.
-- `OLD/VNC_preImageProcessing_Pipeline_07_29_2022.ijm`: preprocessing macro actually used in all five successful runs.
-- `VNC_preImageProcessing_Pipeline_05_22_2026.ijm`: active macro in both copies of the main script. Includes the depth-search correction and optional DV flip control; .
-- `nrrd_compression.ijm`, `Score_Generator_Cluster.ijm`, and `Color_Depth_MIP_batch_0404_2019_For_Pipeline_packbits.ijm`: output compression, scoring, and color-depth projections.
-- `Template_MIP/`: VNC projection masks, including unisex, female, male, and legacy VNC variants. These are projection masks, not the excluded registration template folder.
-- `For_Score/`: masks referenced by the shell script; the tested scoring macro currently uses `UseMask=false`.
-- `Fiji_plugins/`: installed custom plugin files from `Plugins_Color_MIP`, `63x_fiji_plugins`, the root plugins directory, and `EM_based_seg_CDM_plugins`. This includes NRRD writing, alignment scoring, image correlation, gamma, segmentation, rotation, color-depth projection, PackBits saving, and the quit plugin.
-- `Fiji_luts/`: PsychedelicRainBow2 LUT from the working Fiji installation.
-- `cmtk/`: the four macOS CMTK 3.3.1 executables invoked by this pipeline.
+`Fiji_VNC_aligner.zip` is approximately 509 MiB and is stored using Git Large File Storage (Git LFS).
 
-## External files and software
-
-`VNC_Template/` is deliberately NOT copied or linked here. The existing folder is:
-
-    /Users/otsunah/test/VNC_aligner_local_ver/VNC_Template
-
-The tested settings require `JRC2018_VNC_UNISEX_1micron.nrrd`, `JRC2018_VNC_UNISEX_447_G15.nrrd`, and the lateral-reference images used by preprocessing (`VNC_Lateral_M.tif` / `VNC_Lateral_F.tif`) from that external folder.
-
-A complete Fiji installation with Java is still required; the Fiji application and Java runtime are not included. The working installation is:
-
-    /Users/otsunah/Downloads/Fiji_20221005-1117..app
-
-The bundle contains the custom add-on plugins. Standard Fiji features (Bio-Formats, NRRD reading through Fiji IO, CLAHE/mpicbg, Anisotropic Diffusion 2D, and core ImageJ operations) are supplied by the Fiji installation and its libraries. Optional V3Draw paths additionally require Fiji's Vaa3D plugins. The installed Java used in the successful runs was Zulu Java 8, version 1.8.0_322. The included CMTK executables are macOS x86_64 binaries, not Linux or Windows builds.
-
-## Installation and paths
-
-For another Fiji installation, merge the contents of `Fiji_plugins/` into its `plugins/` directory, preserving the subdirectories, and copy `Fiji_luts/PsychedelicRainBow2.lut` into its `luts/` directory. Restart Fiji. Use one installed copy of each custom plugin class to avoid ambiguous duplicate versions.
-
-The current main script is configured for this Mac. `align_run_tested.sh` is a historical runner from the older Diego batch and still selects the 2022 macro. To relocate the package, edit the local/test-mode configuration in `20x40xVNC_Align_CMTK_localMac_LSF.sh`:
-
-1. Set `MACRO_DIR` to this bundle's absolute path, with a trailing `/`.
-2. Set `FIJI` to the chosen Fiji executable.
-3. Set `CMTK` to this bundle's `cmtk/` directory.
-4. Set `TempDir` to the external `VNC_Template/` directory; the packaged script currently uses its absolute path on this Mac.
-5. Leave `MIPTempDir` pointing to this bundle's `Template_MIP/` and `PREPROCIMG` pointing to its `VNC_preImageProcessing_Pipeline_05_22_2026.ijm` at the package root.
-
-Invocation takes three arguments:
-
-    bash 20x40xVNC_Align_CMTK_localMac_LSF.sh /absolute/path/sample.lsm 8 /absolute/path/output
-
-Use absolute paths without spaces or commas; these macros and the original shell script do not consistently support such paths. The current test uses 8 threads, template number 1, gender `u`, and objective `40x`. With the local `sr` channel specification, the 2026 macro forces channel 2 as reference and forces shape analysis off internally. Changing the shell nc82decision setting alone does not override this. The five earlier runs used the 2022 macro and automatic reference selection. No sample images or alignment output volumes were copied into this bundle. pdf for setup and usage.
-
-## DV orientation and simple commands
-
-The packaged main script contains `VNC_DV_FLIP=off`. It always passes `off` as argument 11 to the macro, which reads it from `args[10]`. CPU count is `args[7]` in this 11-argument layout. The separate 12-argument voxel-override layout uses `args[10]` for CPU count; the two layouts do not conflict.
-
-`off` excludes flipped lateral fitting candidates and prevents the corresponding DV flip in reference and signal. Other orientation processing is unchanged. To change this fixed setting, edit the packaged script itself; an environment prefix cannot override it. Other copies of the script may have different settings.
-
-After the Java setup in the manual, use the following from Terminal:
+- **GitHub Desktop:** clone [this repository](https://github.com/HideoOtsuna/VNC_aligner_local_Mac) with GitHub Desktop, which includes [Git LFS support](https://docs.github.com/en/desktop/configuring-and-customizing-github-desktop/about-git-large-file-storage-and-github-desktop).
+- **Terminal:** install [Git LFS](https://git-lfs.com/) first, then run:
 
 ```bash
-cd /Users/otsunah/test/VNC_aligner_local_ver/Necessary_files_VNC_Aligner
-out="/Users/otsunah/test/VNC_aligner_local_ver/output_I3_$(date +%Y%m%d_%H%M%S)"
-for file in /Users/otsunah/test/VNC_aligner_local_ver/sample/Diego/I3/*.lsm; do
+git lfs install
+git clone https://github.com/HideoOtsuna/VNC_aligner_local_Mac.git
+cd VNC_aligner_local_Mac
+git lfs pull
+```
+
+GitHub's **Code > Download ZIP** may contain an LFS pointer instead of the Fiji archive; this depends on the repository's [archive settings](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-git-lfs-objects-in-archives-of-your-repository). Use a clone with Git LFS to retrieve the full file. A small text file beginning with `version https://git-lfs.github.com/spec/v1` is a pointer, not the Fiji ZIP.
+
+Extract `Fiji_VNC_aligner.zip` into the repository folder. On macOS, double-click it in Finder, or run this command from the repository folder:
+
+```bash
+ditto -x -k Fiji_VNC_aligner.zip .
+```
+
+## Repository contents
+
+```text
+VNC_aligner_local_Mac/
+  20x40xVNC_Align_CMTK_localMac_LSF.sh
+  Fiji_VNC_aligner.zip
+  Fiji_VNC_aligner.app/                 # created by extracting the ZIP
+  Copy_to_other_Fiji/
+    VNC_preImageProcessing_Pipeline_05_22_2026.ijm
+    nrrd_compression.ijm
+    Score_Generator_Cluster.ijm
+    Color_Depth_MIP_batch_0404_2019_For_Pipeline_packbits.ijm
+    Fiji_plugins/
+    Fiji_luts/
+    Template_MIP/
+    For_Score/
+    cmtk/
+    OLD/VNC_preImageProcessing_Pipeline_07_29_2022.ijm
+  VNC_Aligner_User_Manual.md
+  VNC_Aligner_User_Manual.pdf
+  LICENSE
+```
+
+`Template_MIP/` contains projection masks. `For_Score/` contains scoring masks; the current scoring macro sets `UseMask=false`. Input images and alignment results are not included.
+
+## Requirements
+
+- macOS compatible with the bundled Intel/x86_64 Fiji, Java, and CMTK binaries. Check compatibility on the computer used for alignment.
+- The extracted Fiji application. It includes Java 8 (`1.8.0_202`), the custom plugins and LUT, Bio-Formats, NRRD reading/writing, CLAHE, and Anisotropic Diffusion 2D.
+- The four CMTK 3.3.1 executables in `Copy_to_other_Fiji/cmtk/`: `registration`, `warp`, `reformatx`, and `make_initial_affine`.
+- An external `VNC_Template/` folder containing these files for the default unisex workflow:
+
+```text
+VNC_Template/
+  JRC2018_VNC_UNISEX_1micron.nrrd
+  JRC2018_VNC_UNISEX_447_G15.nrrd
+  VNC_Lateral_M.tif
+  VNC_Lateral_F.tif
+```
+
+The registration templates and lateral-reference images are not included. Set `TempDir` to their actual folder. The included `Template_MIP/` masks do not replace these files.
+
+The bundled Fiji already contains the custom plugins. If using another Fiji installation, install the add-ons from `Copy_to_other_Fiji/Fiji_plugins/` and the LUT from `Copy_to_other_Fiji/Fiji_luts/`. Preserve the plugin subfolders and replace existing versions of the same plugins rather than installing duplicate copies. Restart Fiji afterward.
+
+## Configure the paths
+
+Open `20x40xVNC_Align_CMTK_localMac_LSF.sh` in a text editor. Its existing paths refer to the author's computer and must be changed for this repository layout.
+
+Keep `testmode=1`: this selects local execution and runs the complete alignment. In the local `if [[ $testmode == "1" ]]; then` block, add `REPO_DIR` before `MACRO_DIR` and replace the existing path assignments with the values below. Replace each assignment in place, including the later `TempDir` assignment, so an old value does not overwrite the new one.
+
+```bash
+REPO_DIR="/absolute/path/VNC_aligner_local_Mac"
+MACRO_DIR="${REPO_DIR}/Copy_to_other_Fiji/"
+FIJI="${REPO_DIR}/Fiji_VNC_aligner.app/Contents/MacOS/ImageJ-macosx"
+CMTK="${MACRO_DIR}cmtk"
+
+TempDir="/absolute/path/VNC_Template"
+MIPTempDir="${MACRO_DIR}Template_MIP"
+PREPROCIMG="${MACRO_DIR}VNC_preImageProcessing_Pipeline_05_22_2026.ijm"
+NRRDCOMP="${MACRO_DIR}nrrd_compression.ijm"
+```
+
+Replace both `/absolute/path/...` placeholders with real paths. `MACRO_DIR` must end with `/`; `FIJI` must point to the executable inside the app. Use absolute paths without spaces or commas for the repository, templates, input images, and output folders, because the script and macros do not consistently support those characters.
+
+Keep `TEMPNUMBER=1` and `INPUT1_GENDER="u"` for the demonstrated unisex configuration.
+
+## Set up Java and check the installation
+
+In Terminal, change to the repository folder and select its bundled Java. Run the Java setup in each new Terminal session used for alignment:
+
+```bash
+cd /absolute/path/VNC_aligner_local_Mac
+REPO_DIR="$PWD"
+export JAVA_HOME="$REPO_DIR/Fiji_VNC_aligner.app/java/macosx/adoptopenjdk-8.jdk/jre/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+
+"$JAVA_HOME/bin/java" -version
+bash -n 20x40xVNC_Align_CMTK_localMac_LSF.sh
+./Copy_to_other_Fiji/cmtk/registration --version
+```
+
+The bundled Java reports `1.8.0_202`; CMTK reports `3.3.1`. `bash -n` should exit successfully without output. Confirm that all four external template files exist in the folder configured as `TempDir`.
+
+## Run an alignment
+
+From the repository folder, after configuring paths and Java:
+
+```bash
+bash 20x40xVNC_Align_CMTK_localMac_LSF.sh \
+    /absolute/path/sample.lsm \
+    8 \
+    /absolute/path/output_run1
+```
+
+The arguments are **one input image, thread count, and output folder**. Use at least 2 threads; 8 is the example setting. Despite `LSF` in the filename, local execution does not require a cluster or `bsub`.
+
+To process every lowercase `.lsm` file directly in a folder, sequentially:
+
+```bash
+out="/absolute/path/output_batch_$(date +%Y%m%d_%H%M%S)"
+for file in /absolute/path/input_folder/*.lsm; do
     [ -f "$file" ] || continue
-    bash 20x40xVNC_Align_CMTK_localMac_LSF.sh "$file" 8 "$out"
+    bash 20x40xVNC_Align_CMTK_localMac_LSF.sh "$file" 8 "$out" || break
 done
 ```
 
-The loop is sequential and does not recurse into subfolders. No environment prefix or filename-specific flip logic is required. `run_sample_no_flip.sh` remains an optional convenience launcher for its fixed sample input and Java setup; it is not required to disable flipping. Use fresh output folders to avoid cached results. Confirm `DV flip mode: off` in each `debug/preproc.log` and inspect the final images.
+Use a fresh output folder for each rerun. The script skips some stages when output paths already exist, so reusing an interrupted run can reuse incomplete results. Samples in a batch need distinct filename stems.
+
+## Current processing settings
+
+- The active preprocessing macro is `VNC_preImageProcessing_Pipeline_05_22_2026.ijm`. The older 2022 macro remains under `Copy_to_other_Fiji/OLD/`.
+- Local execution passes `sr`, which makes the 2026 macro select **input channel 2 as reference**. The reference becomes output channel `_01`; input channel 1 becomes `_02` for the two-channel workflow. Confirm the input's channel identities before running.
+- `VNC_DV_FLIP=off` is hard-coded in the shell script. An environment variable cannot override it. Confirm `DV flip mode: off` in the preprocessing log and inspect the resulting orientation.
+- The 2026 macro forces shape analysis off. Changing the shell's `nc82decision` or shape-analysis setting alone does not override these macro decisions.
+- The default target is `JRC2018_VNC_UNISEX_447_G15.nrrd`, with initial registration to `JRC2018_VNC_UNISEX_1micron.nrrd`.
+
+## Results and validation
+
+For a two-channel input named `sample.lsm`, the main outputs are:
+
+```text
+output_run1/
+  sample/
+    sample_01.nrrd
+    sample_02.nrrd
+    JRC2018_VNC_UNISEX_447_G15_Score.property
+    debug/preproc.log
+  MIP/
+    sample_01.tif
+    sample_02.tif
+```
+
+The sample folder also contains preprocessing intermediates, CMTK transforms, and any generated error properties. The script does not create a `FinalOutputs` folder.
+
+Check that both aligned volumes open, both projections exist, and the score file contains a number. Compare the reference anatomy and slice direction against the template. A successful shell exit or high score alone does not establish a valid alignment.
+
+The repackaged Fiji archive has had its dependencies checked but has not been validated with a new full alignment. Other acquisition types and template modes require separate validation. The script's female/male initialization branches need repair, and template option 3 contains a filename typo; changing only the template or gender settings is insufficient.
+
+## Further documentation
+
+The [Markdown manual](VNC_Aligner_User_Manual.md) and [PDF manual](VNC_Aligner_User_Manual.pdf) contain additional workflow and troubleshooting details. They describe the earlier local package and retain its old paths and some filenames that are absent here. Use this README for the repository layout, bundled Fiji, Java setup, and path configuration.
+
+See [LICENSE](LICENSE) for the repository license.
