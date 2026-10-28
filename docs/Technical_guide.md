@@ -86,7 +86,9 @@ Keep `testmode=1`: this selects local execution and runs the complete alignment.
 ```bash
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MACRO_DIR="${REPO_DIR}/Copy_to_other_Fiji/"
-FIJI="${REPO_DIR}/Fiji_VNC_aligner.app/Contents/MacOS/ImageJ-macosx"
+FIJI_APP="${REPO_DIR}/Fiji_VNC_aligner.app"
+FIJI="${FIJI_APP}/Contents/MacOS/ImageJ-macosx"
+JAVA_HOME="${FIJI_APP}/java/macosx/adoptopenjdk-8.jdk/jre/Contents/Home"
 CMTK="${MACRO_DIR}cmtk"
 
 TempDir="${REPO_DIR}/Template"
@@ -99,26 +101,23 @@ NRRDCOMP="${MACRO_DIR}nrrd_compression.ijm"
 
 Keep `TEMPNUMBER=1` and `INPUT1_GENDER="u"` for the demonstrated unisex configuration.
 
-## Set up Java and check the installation
+## Check the installation
 
-In Terminal, change to the repository folder and select its bundled Java. Run the Java setup in each new Terminal session used for alignment:
+The shell script specifies the Fiji application with `FIJI_APP` and automatically exports its bundled `JAVA_HOME` and `PATH` for each run. No Java setup commands are needed in Terminal. If using another Fiji application, edit `FIJI_APP` and the corresponding `JAVA_HOME` path inside the script.
+
+From the repository folder, these optional checks confirm the shell syntax and CMTK version:
 
 ```bash
 cd /absolute/path/VNC_aligner_local_Mac
-REPO_DIR="$PWD"
-export JAVA_HOME="$REPO_DIR/Fiji_VNC_aligner.app/java/macosx/adoptopenjdk-8.jdk/jre/Contents/Home"
-export PATH="$JAVA_HOME/bin:$PATH"
-
-"$JAVA_HOME/bin/java" -version
 bash -n 20x40xVNC_Align_CMTK_localMac_LSF.sh
 ./Copy_to_other_Fiji/cmtk/registration --version
 ```
 
-The bundled Java reports `1.8.0_202`; CMTK reports `3.3.1`. `bash -n` should exit successfully without output. Confirm that all four files listed above are present in `Template/` and that the NRRD files have been downloaded through Git LFS.
+The bundled Java version is `1.8.0_202`; CMTK reports `3.3.1`. `bash -n` should exit successfully without output. The script checks that Fiji and its bundled Java exist before processing. Confirm that all four files listed above are present in `Template/` and that the NRRD files have been downloaded through Git LFS.
 
 ## Run an alignment
 
-From the repository folder, after configuring paths and Java:
+From the repository folder, after extracting Fiji:
 
 ```bash
 bash 20x40xVNC_Align_CMTK_localMac_LSF.sh \
@@ -127,7 +126,7 @@ bash 20x40xVNC_Align_CMTK_localMac_LSF.sh \
     /absolute/path/output_run1
 ```
 
-The arguments are **one input image, thread count, and output folder**. Use at least 2 threads; 8 is the example setting. Despite `LSF` in the filename, local execution does not require a cluster or `bsub`.
+The arguments are **the full file path to one confocal stack, thread count, and output folder**. The input path must start with `/`; relative input paths are rejected. Use at least 2 threads; 8 is the example setting. Despite `LSF` in the filename, local execution does not require a cluster or `bsub`.
 
 To process every lowercase `.lsm` file directly in a folder, sequentially:
 

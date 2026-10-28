@@ -39,25 +39,20 @@ Open **Terminal** from **Applications > Utilities**.
 
 Type `cd` followed by a space, drag the downloaded `VNC_aligner_local_Mac` folder from Finder into Terminal, and press **Return**. This tells Terminal which folder to work in.
 
-Copy and paste these two lines into Terminal, then press **Return**. They select the Java included with Fiji. Repeat this step whenever you open a new Terminal session for alignment.
+The `.sh` script sets the Fiji location and selects its bundled Java automatically.
+
+Run this command, replacing both example paths with your own locations:
 
 ```bash
-export JAVA_HOME="$PWD/Fiji_VNC_aligner.app/java/macosx/adoptopenjdk-8.jdk/jre/Contents/Home"
-export PATH="$JAVA_HOME/bin:$PATH"
+bash 20x40xVNC_Align_CMTK_localMac_LSF.sh \
+    "/full/path/to/confocal_stack.lsm" \
+    8 \
+    "/full/path/to/Results_run1"
 ```
 
-Next, choose the image to align:
+The first path must be the **full file path to your confocal stack**, starting with `/`. Dragging the stack from Finder into Terminal inserts its full path. The last path is where you want the results saved; the program creates that folder.
 
-1. Type `image=` in Terminal, with no spaces.
-2. Drag your `.lsm` file from Finder into Terminal, then press **Return**.
-
-Now copy and paste this command and press **Return**:
-
-```bash
-bash 20x40xVNC_Align_CMTK_localMac_LSF.sh "$image" 8 "$PWD/Results_run1"
-```
-
-Leave `8` as the example number of processing threads for your first run. The program creates a results folder called **`Results_run1`** inside the downloaded project folder.
+Leave `8` as the example number of processing threads for your first run. Press **Return** to start.
 
 Messages will appear in Terminal while the image is being processed. Keep Terminal open until the command finishes.
 

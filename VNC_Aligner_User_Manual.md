@@ -2,7 +2,7 @@
 
 For `20x40xVNC_Align_CMTK_localMac_LSF.sh` on macOS
 
-Updated October 28, 2026 for automatic reference detection by signal amount. DV flip remains fixed off. For the current repository layout and first-run instructions, follow `README.md`; the path examples in this manual describe the earlier local installation.
+Updated October 28, 2026 for automatic reference detection and automatic Fiji/Java setup in the shell script. DV flip remains fixed off. For the current repository layout and first-run instructions, follow `README.md`; some path examples in this manual describe the earlier local installation.
 
 ## 1. Start here
 
@@ -47,15 +47,18 @@ The packaged `20x40xVNC_Align_CMTK_localMac_LSF.sh` already has the settings bel
 Inside `if [[ $testmode == "1" ]]; then`, check these assignments. If relocating the package, replace the paths in place; do not leave later assignments that overwrite them.
 
 ```bash
-MACRO_DIR="/Users/otsunah/test/VNC_aligner_local_ver/Necessary_files_VNC_Aligner/"
-FIJI=/Users/otsunah/Downloads/Fiji_20221005-1117..app/Contents/MacOS/ImageJ-macosx
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+MACRO_DIR="${REPO_DIR}/Copy_to_other_Fiji/"
+FIJI_APP="${REPO_DIR}/Fiji_VNC_aligner.app"
+FIJI="${FIJI_APP}/Contents/MacOS/ImageJ-macosx"
+JAVA_HOME="${FIJI_APP}/java/macosx/adoptopenjdk-8.jdk/jre/Contents/Home"
 CMTK="${MACRO_DIR}cmtk"
 
 TEMPNUMBER=1
 INPUT1_GENDER="u"
 objective="40x"
 
-TempDir="/Users/otsunah/test/VNC_aligner_local_ver/VNC_Template"
+TempDir="${REPO_DIR}/Template"
 MIPTempDir="${MACRO_DIR}Template_MIP"
 PREPROCIMG="${MACRO_DIR%/}/VNC_preImageProcessing_Pipeline_05_22_2026.ijm"
 NRRDCOMP="${MACRO_DIR}nrrd_compression.ijm"
@@ -106,18 +109,11 @@ Fiji.app/luts/PsychedelicRainBow2.lut
 
 Copy the LUT from `Fiji_luts/` and restart Fiji. Check for commands including `Nrrd Writer`, `Alignment Scores`, `Image Correlation Atomic EQ`, `Gamma samewindow noswing`, `PackBits save activeIMG headless`, and `quit plugin`. Avoid installing conflicting versions of the same custom plugin. Standard Fiji and its libraries are separate from these custom add-ons.
 
-### Java on this Mac
+### Fiji and Java are set in the shell script
 
-Run these commands in each Terminal session before launching the script. This is the bundled Java used for the successful runs; change the path on another computer.
+The local shell script sets `FIJI_APP` and `FIJI`, then selects the Java bundled inside that application. It exports `JAVA_HOME` and updates `PATH` automatically for every run. No Java commands are needed in Terminal.
 
-```bash
-JAVA_BUNDLE=/Users/otsunah/Downloads/Fiji_20221005-1117..app/java/macosx
-export JAVA_HOME="$JAVA_BUNDLE/zulu8.60.0.21-ca-fx-jdk8.0.322-macosx_x64/jre/Contents/Home"
-export PATH="$JAVA_HOME/bin:$PATH"
-"$JAVA_HOME/bin/java" -version
-```
-
-The verified Java version was `1.8.0_322`. Some Fiji launcher messages said Java was not found even during successful runs. Confirm that the macro actually starts and that outputs are produced; a startup message alone is not a reliable diagnosis.
+The bundled Java version is `1.8.0_202`. Extract `Fiji_VNC_aligner.zip` beside the script. If using another Fiji application, edit `FIJI_APP` and the corresponding `JAVA_HOME` path inside the shell script. The script checks both before processing.
 
 ### Before the first run
 
@@ -139,7 +135,7 @@ ls "$BASE/VNC_Template/VNC_Lateral_F.tif"
 
 ## 4. Run one sample
 
-Configure Fiji, templates, and Java first (pages 2-3). Then use three arguments separated by spaces, without commas:
+Extract Fiji and keep the included templates in place (pages 2-3). Then use three arguments separated by spaces, without commas. The first argument must be the full file path to the confocal stack, starting with `/`:
 
 ```text
 bash SCRIPT FILE_PATH CPU_COUNT OUTPUT_FOLDER
@@ -187,7 +183,7 @@ Preprocessing details are always in `<output>/<sample-name>/debug/preproc.log`. 
 
 ## 5. Run every LSM file in a folder
 
-The script accepts one file per invocation. After the Java setup on page 3, this loop runs every lowercase `.lsm` file directly in `Diego/I3`, one at a time, using 8 threads per sample. DV flipping is already hard-coded off.
+The script accepts one file per invocation and configures Fiji and Java itself. This loop runs every lowercase `.lsm` file directly in `Diego/I3`, one at a time, using 8 threads per sample. DV flipping is already hard-coded off.
 
 ```bash
 cd /Users/otsunah/test/VNC_aligner_local_ver/Necessary_files_VNC_Aligner
@@ -282,7 +278,7 @@ For 20x images, inspect actual voxel calibration. `objective="40x"` is a label u
 | --- | --- |
 | Preprocess macro could not be found | Set `PREPROCIMG` to the 2026 file in the package root; check `MACRO_DIR`. |
 | Fiji cannot be found | Set `FIJI` to the executable inside the chosen application, not its folder. |
-| Java startup failure | Verify `JAVA_HOME`, run its `bin/java -version`, and inspect the macro log for actual execution. |
+| Java startup failure | Check the `FIJI_APP` and `JAVA_HOME` paths inside the shell script and inspect the macro log. No Terminal exports are needed. |
 | Unrecognized Fiji command | Install the matching custom plugin and its dependencies, restart Fiji, and check for conflicting copies. |
 | CMTK command not found or cannot execute | Check `CMTK`, executable permissions, and compatibility with this Mac. |
 | Template cannot be opened | Check external `TempDir` and the selected filename. Template 3 contains a typo in the original code. |

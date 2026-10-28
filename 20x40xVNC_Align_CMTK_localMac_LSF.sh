@@ -58,9 +58,21 @@ echo "$testmode; "$testmode
 if [[ $testmode == "1" ]]; then
     echo "Test mode"
 
-    InputFilePath=$1
-    NSLOTS=$2
-    OUTPUTORI=$3
+    if [[ $# -ne 3 ]]; then
+        echo "Usage: bash $0 /full/path/to/confocal_stack.lsm THREADS /full/path/to/results" >&2
+        exit 2
+    fi
+    InputFilePath="$1"
+    NSLOTS="$2"
+    OUTPUTORI="$3"
+    if [[ "$InputFilePath" != /* ]]; then
+        echo "Input image must be a full file path, starting with /: $InputFilePath" >&2
+        exit 2
+    fi
+    if [[ ! -f "$InputFilePath" ]]; then
+        echo "Input image could not be found: $InputFilePath" >&2
+        exit 1
+    fi
     nc82decision="Signal_amount"
 
     end=${InputFilePath##*/}
@@ -97,7 +109,20 @@ if [[ $testmode == "1" ]]; then
 ####### tools location setting #######################################################
     REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     MACRO_DIR="${REPO_DIR}/Copy_to_other_Fiji/"
-    FIJI="${REPO_DIR}/Fiji_VNC_aligner.app/Contents/MacOS/ImageJ-macosx"
+    # Configure the Fiji application and its bundled Java here.
+    FIJI_APP="${REPO_DIR}/Fiji_VNC_aligner.app"
+    FIJI="${FIJI_APP}/Contents/MacOS/ImageJ-macosx"
+    JAVA_HOME="${FIJI_APP}/java/macosx/adoptopenjdk-8.jdk/jre/Contents/Home"
+    if [[ ! -x "$FIJI" ]]; then
+        echo "Fiji cannot be found at $FIJI. Extract Fiji_VNC_aligner.zip beside this script, or edit FIJI_APP in the script." >&2
+        exit 1
+    fi
+    if [[ ! -x "$JAVA_HOME/bin/java" ]]; then
+        echo "Fiji's bundled Java cannot be found at $JAVA_HOME. Check the extracted app or edit JAVA_HOME in the script." >&2
+        exit 1
+    fi
+    export JAVA_HOME
+    export PATH="$JAVA_HOME/bin:$PATH"
     CMTK="${MACRO_DIR}cmtk"
 
 
