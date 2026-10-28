@@ -2,13 +2,13 @@
 
 For `20x40xVNC_Align_CMTK_localMac_LSF.sh` on macOS
 
-Updated October 27, 2026 for the packaged script: hard-coded DV flip off, simple Bash commands, and the current output layout.
+Updated October 28, 2026 for automatic reference detection by signal amount. DV flip remains fixed off. For the current repository layout and first-run instructions, follow `README.md`; the path examples in this manual describe the earlier local installation.
 
 ## 1. Start here
 
 This script preprocesses a VNC image in Fiji, registers it with CMTK, resamples its channels into a reference template, calculates an alignment score, and creates color-depth projections.
 
-The current configuration is **local mode, 8 threads, unisex template number 1, and channel 2 as reference**. The active preprocessing macro is the 2026 version; earlier validation used the 2022 version. Other input formats, 20x acquisition, and other template modes require separate validation.
+The current configuration is **local mode, 8 threads, unisex template number 1, and automatic reference detection based on signal amount**. The active preprocessing macro is the 2026 version; earlier validation used the 2022 version. Other input formats, 20x acquisition, and other template modes require separate validation.
 
 **DV orientation:** the packaged script hard-codes `VNC_DV_FLIP=off` for every sample. No environment prefix or filename exception is needed. Inspect reference anatomy and slice direction after alignment; a high score alone does not establish correct orientation.
 
@@ -83,7 +83,9 @@ This disables automatic lateral DV flipping in reference and signal. Other orien
 
 ### Select the reference channel
 
-The local shell command passes `sr`. The 2026 macro maps `sr` to channel 2 and overrides the shell's `nc82decision="Signal_amount"`. Changing only that shell variable will not change this selection. Confirm `ch2 is reference` in `preproc.log` and use this configuration for samples whose reference is channel 2. A different channel layout requires coordinated macro/call changes and validation. The earlier 2022 macro used automatic signal-based selection.
+The local runner sets `nc82decision="Signal_amount"`. The macro compares the mean intensity of each channel's sum-slice projection and selects the channel with the largest value. For equally sized channels, this ranks their total voxel intensity. Equal values select the first matching channel. The `sr`/`ssr` argument does not override this choice.
+
+Check the measured amounts and the selected channel (`ch1 is reference`, `ch2 is reference`, etc.) in `preproc.log`. Confirm that it contains the anatomical reference. To select a channel manually, change the local runner's `nc82decision` to `ch1`, `ch2`, `ch3`, or `ch4` for a channel present in the input.
 
 ---
 
@@ -254,7 +256,7 @@ OUTPUT_ROOT/
 
 `FinalOutputs` is no longer created. The sample subfolder holds the aligned data, intermediates, debug logs, and any generated error properties.
 
-Final aligned volumes are `SAMPLE_NAME_01.nrrd` and `_02.nrrd`; the `PRE_PROCESSED` files are intermediate volumes. The macro puts the reference channel in output `_01`. In the validated two-channel runs, input channel 2 became output `_01` and input channel 1 became output `_02`.
+Final aligned volumes are `SAMPLE_NAME_01.nrrd` and `_02.nrrd`; the `PRE_PROCESSED` files are intermediate volumes. The selected reference becomes output `_01`. For a two-channel input, the other input channel becomes output `_02`, regardless of input order.
 
 With template 1, the verified aligned volumes were **573 x 1119 x 219 voxels**, with voxel spacing approximately **0.461122 x 0.461122 x 0.7 micrometers**. Verify that both volumes open, both projections exist, and the score file contains a number. Inspect reference anatomy against the template; a score alone does not establish anatomical correctness. A score-labelled AVI comparison may also be generated. The active local workflow does not generate a combined V3DRAW file.
 
@@ -285,7 +287,7 @@ For 20x images, inspect actual voxel calibration. `objective="40x"` is a label u
 | CMTK command not found or cannot execute | Check `CMTK`, executable permissions, and compatibility with this Mac. |
 | Template cannot be opened | Check external `TempDir` and the selected filename. Template 3 contains a typo in the original code. |
 | Initial affine fails | Check preprocessing first: valid `PRE_PROCESSED_UNISEX_01.nrrd` must exist. |
-| Wrong reference channel | The 2026 macro forces channel 2 for local `sr`. Changing the shell variable alone does not override this; see page 2. |
+| Wrong reference channel | Inspect the measured signal amounts and selected channel in `preproc.log`. Set the local runner's `nc82decision` to the intended channel if needed; see page 2. |
 | Volumes exist but no projections | Inspect Terminal output or a saved `run.log`; check Template_MIP masks, LUT, and projection plugins. |
 
 ### Interrupted runs and cached output

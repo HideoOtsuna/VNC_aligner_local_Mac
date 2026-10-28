@@ -6,14 +6,9 @@ By Hideo Otsuna. Fiji, the required plugins, alignment tools, and templates are 
 
 ## Before you start
 
-You need a Mac and a two-channel `.lsm` image stack. Check the channels in Fiji:
+You need a Mac and a two-channel `.lsm` image stack containing an anatomical reference and the signal you want to align, such as labeled neurons.
 
-| Input channel | What it should contain |
-| --- | --- |
-| Channel 1 | The signal you want to align, such as labeled neurons |
-| Channel 2 | The anatomical reference used to match the VNC to the template |
-
-**The current settings always use channel 2 as the anatomical reference.** If your channels are arranged differently, check the [technical guide](docs/Technical_guide.md) before running.
+**The program automatically selects the reference channel based on signal amount.** It compares the signal across the image stack and uses the channel with more signal as the reference. Either channel order can be used. Check that the selected channel is your anatomical reference when inspecting the result.
 
 Use file and folder names without spaces or commas. Start with one image and inspect the result before processing a full experiment.
 
@@ -74,11 +69,13 @@ For an input called `your_image.lsm`, look inside `Results_run1`:
 
 | File | What it contains |
 | --- | --- |
-| `your_image/your_image_01.nrrd` | Aligned anatomical reference (input channel 2) |
-| `your_image/your_image_02.nrrd` | Aligned signal (input channel 1) |
+| `your_image/your_image_01.nrrd` | Aligned reference selected by the program |
+| `your_image/your_image_02.nrrd` | Aligned image from the other input channel |
 | `MIP/your_image_01.tif` and `MIP/your_image_02.tif` | Color-depth projections |
 
 Open the `.nrrd` images in Fiji. Compare the aligned reference with `Template/JRC2018_VNC_UNISEX_447_G15.nrrd`, and check the shape and orientation of the VNC before using the aligned signal for analysis.
+
+The selected input channel is recorded in `your_image/debug/preproc.log`, together with the signal amount measured in each channel.
 
 An alignment score is also saved in the image's results folder. **A high score alone does not guarantee correct anatomical alignment or orientation.**
 
@@ -88,7 +85,7 @@ An alignment score is also saved in the image's results folder. **A high score a
 | --- | --- |
 | Fiji ZIP will not expand, or a template opens as a few lines of text | Download the package with GitHub Desktop and let the large files finish downloading. |
 | The program cannot find Fiji | Confirm that `Fiji_VNC_aligner.app` is inside the downloaded project folder. |
-| The run stops or the images look wrong | Check the channel order and the messages in Terminal. Use a new results folder when trying again. |
+| The run stops or the images look wrong | Check which channel was selected as the reference and read the messages in Terminal. Use a new results folder when trying again. |
 
 For batch processing, computer compatibility, settings, and detailed troubleshooting, see the [technical guide](docs/Technical_guide.md).
 

@@ -144,9 +144,10 @@ Use a fresh output folder for each rerun. The script skips some stages when outp
 ## Current processing settings
 
 - The active preprocessing macro is `VNC_preImageProcessing_Pipeline_05_22_2026.ijm`. The older 2022 macro remains under `Copy_to_other_Fiji/OLD/`.
-- Local execution passes `sr`, which makes the 2026 macro select **input channel 2 as reference**. The reference becomes output channel `_01`; input channel 1 becomes `_02` for the two-channel workflow. Confirm the input's channel identities before running.
+- The local runner sets `nc82decision="Signal_amount"`. The macro measures the mean intensity of each channel's **sum-slice projection** and selects the channel with the largest value as the reference. For equally sized channels, this ranks their total voxel intensity. Equal values select the first matching channel. The selected reference becomes output `_01`; for a two-channel input, the other channel becomes `_02`, regardless of input order.
+- `preproc.log` records the reference-selection mode, each channel's measured signal amount, and the selected channel (`ch1 is reference`, `ch2 is reference`, etc.). Verify that the detected channel contains the anatomical reference. To force a particular channel, set the local runner's `nc82decision` to `ch1`, `ch2`, `ch3`, or `ch4` for a channel present in the input. The `sr`/`ssr` argument no longer overrides this setting.
 - `VNC_DV_FLIP=off` is hard-coded in the shell script. An environment variable cannot override it. Confirm `DV flip mode: off` in the preprocessing log and inspect the resulting orientation.
-- The 2026 macro forces shape analysis off. Changing the shell's `nc82decision` or shape-analysis setting alone does not override these macro decisions.
+- The 2026 macro forces shape analysis off. Changing the shell's shape-analysis setting alone does not override this macro decision.
 - The default target is `JRC2018_VNC_UNISEX_447_G15.nrrd`, with initial registration to `JRC2018_VNC_UNISEX_1micron.nrrd`.
 
 ## Results and validation

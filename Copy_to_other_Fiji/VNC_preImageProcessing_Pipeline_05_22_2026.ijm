@@ -215,13 +215,10 @@ function God(savedir, noext,origi,Batch,myDir0,chanspec,temptype,AdvanceDepth,La
 	
 	print("FrontAndBack; "+FrontAndBack);
 	
-	if(chanspec=="sr")
-	nc82decision="ch2";
-	else if(chanspec=="ssr")
-	nc82decision="ch3";
-	else if(chanspec=="ssr")
-	nc82decision="ch4";
-	
+	// Honor the reference-selection mode supplied by the runner.
+	// Signal_amount compares the mean of each channel's sum-slice projection.
+	// Explicit ch1/ch2/ch3/ch4 settings remain available as manual overrides.
+	print("Reference selection mode: "+nc82decision);
 	
 	if (bitd==8){
 		setMinAndMax(0, 255);
@@ -241,7 +238,7 @@ function God(savedir, noext,origi,Batch,myDir0,chanspec,temptype,AdvanceDepth,La
 	getDimensions(width, height, channels, slices, frames);
 	print("channels; "+channels);
 	if(channels>1){
-		run("Split Channels");//C2 is nc82
+		run("Split Channels");// Compare the input channels before selecting the reference.
 		
 		titlelist=getList("image.titles");
 		signal_count = 0;
@@ -261,6 +258,7 @@ function God(savedir, noext,origi,Batch,myDir0,chanspec,temptype,AdvanceDepth,La
 			run("Z Project...", "projection=[Sum Slices]");
 			avetest0=getImageID();
 			getStatistics(area, mean10, min, max, std, histogram);
+			print("Channel 1 signal amount: "+mean10);
 			maxmean=mean10;
 			close();
 			
@@ -268,6 +266,7 @@ function God(savedir, noext,origi,Batch,myDir0,chanspec,temptype,AdvanceDepth,La
 			run("Z Project...", "projection=[Sum Slices]");
 			avetest1=getImageID();
 			getStatistics(area, mean20, min, max, std, histogram);
+			print("Channel 2 signal amount: "+mean20);
 			if(maxmean<mean20)
 			maxmean=mean20;
 			close();
@@ -277,6 +276,7 @@ function God(savedir, noext,origi,Batch,myDir0,chanspec,temptype,AdvanceDepth,La
 				run("Z Project...", "projection=[Sum Slices]");
 				avetest2=getImageID();
 				getStatistics(area, mean30, min, max, std, histogram);
+				print("Channel 3 signal amount: "+mean30);
 				if(maxmean<mean30)
 				maxmean=mean30;
 				close();
@@ -287,6 +287,7 @@ function God(savedir, noext,origi,Batch,myDir0,chanspec,temptype,AdvanceDepth,La
 				run("Z Project...", "projection=[Sum Slices]");
 				avetest3=getImageID();
 				getStatistics(area, mean40, min, max, std, histogram);
+				print("Channel 4 signal amount: "+mean40);
 				if(maxmean<mean40)
 				maxmean=mean40;
 				close();
