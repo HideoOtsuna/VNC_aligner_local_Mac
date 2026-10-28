@@ -6,9 +6,9 @@ By Hideo Otsuna. Fiji, the required plugins, alignment tools, and templates are 
 
 ## Before you start
 
-You need a Mac and a two-channel `.lsm` image stack containing an anatomical reference and the signal you want to align, such as labeled neurons.
+You need a Mac and an `.lsm` image stack with **2–4 channels**: one anatomical reference and up to three signal channels, such as labeled neurons.
 
-**The program automatically selects the reference channel based on signal amount.** It compares the signal across the image stack and uses the channel with more signal as the reference. Either channel order can be used. Check that the selected channel is your anatomical reference when inspecting the result.
+**The program automatically selects the reference channel based on signal amount.** It compares all input channels across the image stack and uses the channel with the most signal as the reference. The reference can be in any channel position. Check that the selected channel is your anatomical reference when inspecting the result.
 
 Use file and folder names without spaces or commas. Start with one image and inspect the result before processing a full experiment.
 
@@ -70,8 +70,11 @@ For an input called `your_image.lsm`, look inside `Results_run1`:
 | File | What it contains |
 | --- | --- |
 | `your_image/your_image_01.nrrd` | Aligned reference selected by the program |
-| `your_image/your_image_02.nrrd` | Aligned image from the other input channel |
-| `MIP/your_image_01.tif` and `MIP/your_image_02.tif` | Color-depth projections |
+| `your_image/your_image_02.nrrd` | First aligned signal channel |
+| `your_image/your_image_03.nrrd` and `your_image/your_image_04.nrrd` | Additional aligned signal channels, when present in the input |
+| `MIP/` | Color-depth projections for each output channel |
+
+Output `_01` is always the selected reference. The remaining channels are saved as `_02`, `_03`, and `_04` in their original input order, skipping the reference. A two-channel input produces two aligned volumes; a four-channel input produces four.
 
 Open the `.nrrd` images in Fiji. Compare the aligned reference with `Template/JRC2018_VNC_UNISEX_447_G15.nrrd`, and check the shape and orientation of the VNC before using the aligned signal for analysis.
 

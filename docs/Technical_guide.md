@@ -143,6 +143,7 @@ Use a fresh output folder for each rerun. The script skips some stages when outp
 
 ## Current processing settings
 
+- The workflow supports **2–4 input channels**: one anatomical reference and one to three signal channels. Preprocessing, CMTK resampling, and projection generation handle up to four channels.
 - The active preprocessing macro is `VNC_preImageProcessing_Pipeline_05_22_2026.ijm`. The older 2022 macro remains under `Copy_to_other_Fiji/OLD/`.
 - The local runner sets `nc82decision="Signal_amount"`. The macro measures the mean intensity of each channel's **sum-slice projection** and selects the channel with the largest value as the reference. For equally sized channels, this ranks their total voxel intensity. Equal values select the first matching channel. The selected reference becomes output `_01`; for a two-channel input, the other channel becomes `_02`, regardless of input order.
 - `preproc.log` records the reference-selection mode, each channel's measured signal amount, and the selected channel (`ch1 is reference`, `ch2 is reference`, etc.). Verify that the detected channel contains the anatomical reference. To force a particular channel, set the local runner's `nc82decision` to `ch1`, `ch2`, `ch3`, or `ch4` for a channel present in the input. The `sr`/`ssr` argument no longer overrides this setting.
@@ -165,6 +166,8 @@ output_run1/
     sample_01.tif
     sample_02.tif
 ```
+
+For three- or four-channel inputs, additional aligned volumes end in `_03.nrrd` and `_04.nrrd`, with corresponding projections in `MIP/`. The selected reference is always `_01`; the remaining input channels retain their relative input order in `_02` through `_04`.
 
 The sample folder also contains preprocessing intermediates, CMTK transforms, and any generated error properties. The script does not create a `FinalOutputs` folder.
 
