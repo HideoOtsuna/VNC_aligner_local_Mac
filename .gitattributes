@@ -1,2 +1,11 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+Fiji_VNC_aligner.zip filter=lfs diff=lfs merge=lfs -text
+
+# Preserve Fiji plugins, LUTs, image masks, and the PDF byte for byte.
+*.jar binary
+*.class binary
+*.lut binary
+*.nrrd binary
+*.tif binary
+*.pdf binary
